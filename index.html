@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grace Shopping Mall - Warangal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+
+    <nav id="navbar" class="bg-white shadow-sm sticky top-0 z-50 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-xl font-bold text-indigo-600">Grace Shopping Mall</span>
+                <span id="roleBadge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800"></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="userEmailDisplay" class="text-sm text-gray-600 hidden sm:inline"></span>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition cursor-pointer">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div id="landingView" class="flex-grow flex items-center justify-center p-4 bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+        <div class="bg-white p-8 sm:p-10 rounded-2xl shadow-xl max-w-md w-full text-center border border-gray-100">
+            <div class="w-16 h-16 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-6 text-2xl font-bold shadow-lg">
+                G
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Grace Shopping Mall</h1>
+            <p class="text-gray-500 mb-8 text-sm">Exclusive Dress Collection & Direct WhatsApp Ordering</p>
+            
+            <div class="space-y-4">
+                <button onclick="handleLogin('user')" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer">
+                    <span>User Login</span>
+                </button>
+                <button onclick="handleLogin('admin')" class="w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center space-x-2 cursor-pointer">
+                    <span>Admin Login</span>
+                </button>
+            </div>
+
+            <div id="authError" class="hidden mt-5 p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg text-left break-words"></div>
+            <div id="authLoading" class="hidden mt-5 text-indigo-600 text-sm font-medium">Authenticating with Google...</div>
+        </div>
+    </div>
+
+    <div id="userView" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Latest Dress Collection</h2>
+                <p class="text-sm text-gray-500">Select your favorite outfit and order directly via WhatsApp</p>
+            </div>
+            <div class="flex space-x-2 overflow-x-auto pb-2 sm:pb-0">
+                <button onclick="filterCategory('All')" class="cat-btn bg-indigo-600 text-white px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">All</button>
+                <button onclick="filterCategory('Ethnic')" class="cat-btn bg-white text-gray-700 border px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 cursor-pointer">Ethnic</button>
+                <button onclick="filterCategory('Western')" class="cat-btn bg-white text-gray-700 border px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 cursor-pointer">Western</button>
+                <button onclick="filterCategory('Partywear')" class="cat-btn bg-white text-gray-700 border px-4 py-1.5 rounded-full text-sm font-medium hover:bg-gray-50 cursor-pointer">Partywear</button>
+            </div>
+        </div>
+
+        <div id="userProductGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+    </div>
+
+    <div id="adminView" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-900">Admin Inventory Management</h2>
+                <p class="text-sm text-gray-500">Add, update, or remove store items in real-time</p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+                <button onclick="seedDefaultProducts(true)" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow transition cursor-pointer">
+                    Reset / Seed 12 Default Dresses
+                </button>
+                <button onclick="openProductModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg shadow transition cursor-pointer">
+                    + Add New Dress
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Product</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Price</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Stock</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductTable" class="divide-y divide-gray-200 bg-white"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="productModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <h3 id="modalTitle" class="text-xl font-bold text-gray-900 mb-4">Add New Dress</h3>
+            <form id="productForm" onsubmit="saveProduct(event)" class="space-y-4">
+                <input type="hidden" id="editProductId">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Dress Name</label>
+                    <input type="text" id="prodName" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
+                        <input type="number" id="prodPrice" required min="1" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select id="prodCategory" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="Ethnic">Ethnic</option>
+                            <option value="Western">Western</option>
+                            <option value="Partywear">Partywear</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                    <input type="url" id="prodImage" required placeholder="https://..." class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="prodDesc" rows="2" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"></textarea>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="prodInStock" checked class="h-4 w-4 text-indigo-600 rounded">
+                    <label for="prodInStock" class="ml-2 text-sm text-gray-700">In Stock</label>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t">
+                    <button type="button" onclick="closeProductModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg cursor-pointer">Cancel</button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg cursor-pointer">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8g7Pzctl_YpEQ04ukbvY7l_DT",
+            authDomain: "grace-shopping-mall-wgl.firebaseapp.com",
+            projectId: "grace-shopping-mall-wgl",
+            storageBucket: "grace-shopping-mall-wgl.appspot.com",
+            messagingSenderId: "873828074356",
+            appId: "1:873828074356:web:a7e6be7117dc6b90d22221",
+            measurementId: "G-X3EVQ7RPB2"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = "damerajona@gmail.com";
+        const WHATSAPP_NUMBER = "919492631963"; 
+        let intendedRole = sessionStorage.getItem("intendedRole") || "user";
+        let allProducts = [];
+        let currentCategory = "All";
+        let unsubscribeProducts = null;
+
+        const defaultDresses = [
+            { name: "Royal Banarasi Silk Saree", price: 3499, category: "Ethnic", inStock: true, description: "Handwoven crimson silk saree with intricate gold zari border.", image: "https://images.unsplash.com/photo-1610030469983-98e5550d6193c?auto=format&fit=crop&w=600&q=80" },
+            { name: "Emerald Velvet Anarkali Suit", price: 2899, category: "Ethnic", inStock: true, description: "Floor-length emerald green velvet Anarkali with embroidered dupatta.", image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=600&q=80" },
+            { name: "Floral Georgette Maxi Dress", price: 1499, category: "Western", inStock: true, description: "Breezy pastel floral maxi dress ideal for daytime outings.", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=600&q=80" },
+            { name: "Midnight Sequin Evening Gown", price: 4299, category: "Partywear", inStock: true, description: "Shimmering navy blue sequin gown with a flattering silhouette.", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?auto=format&fit=crop&w=600&q=80" },
+            { name: "Pastel Peach Bridal Lehenga", price: 6999, category: "Partywear", inStock: true, description: "Heavy mirror-work peach lehenga choli set with net dupatta.", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80" },
+            { name: "Classic Chic Wrap Midi Dress", price: 1299, category: "Western", inStock: true, description: "Solid burgundy wrap midi dress with waist tie-up belt.", image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=600&q=80" },
+            { name: "Kanchipuram Gold Tissue Saree", price: 4599, category: "Ethnic", inStock: true, description: "Traditional South Indian Kanchipuram weave for festive occasions.", image: "https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?auto=format&fit=crop&w=600&q=80" },
+            { name: "Crimson Satin Cocktail Dress", price: 2199, category: "Partywear", inStock: true, description: "Sleek crimson satin slip dress with cowl neckline.", image: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=600&q=80" },
+            { name: "Chikankari Lucknowi Kurti Set", price: 1699, category: "Ethnic", inStock: true, description: "Hand-embroidery white cotton Chikankari kurta with palazzo.", image: "https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=600&q=80" },
+            { name: "Boho Tiered Summer Sundress", price: 1199, category: "Western", inStock: true, description: "Lightweight cotton tiered sundress with puff sleeves.", image: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?auto=format&fit=crop&w=600&q=80" },
+            { name: "Ivory Pearl Embellished Sharara", price: 3299, category: "Partywear", inStock: true, description: "Three-piece ivory sharara suit adorned with delicate pearl work.", image: "https://images.unsplash.com/photo-1583391733956-6c78276477e2?auto=format&fit=crop&w=600&q=80" },
+            { name: "Denim Button-Down Shirt Dress", price: 1599, category: "Western", inStock: true, description: "Casual indigo soft denim shirt dress with pockets.", image: "https://images.unsplash.com/photo-1591369822096-ffd140ec948f?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        async function seedDefaultProducts(forceReset = false) {
+            try {
+                const snapshot = await db.collection("products").get();
+                if (snapshot.empty || forceReset) {
+                    if (forceReset && !confirm("This will add all 12 default dresses to your store. Continue?")) return;
+                    const batch = db.batch();
+                    defaultDresses.forEach(dress => {
+                        const docRef = db.collection("products").doc();
+                        batch.set(docRef, { ...dress, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+                    });
+                    await batch.commit();
+                    if (forceReset) alert("12 default dresses added successfully!");
+                }
+            } catch (error) {
+                console.error("Error seeding products:", error);
+            }
+        }
+
+        async function handleLogin(role) {
+            intendedRole = role;
+            sessionStorage.setItem("intendedRole", role);
+            const errorBox = document.getElementById("authError");
+            const loadingBox = document.getElementById("authLoading");
+            errorBox.classList.add("hidden");
+            loadingBox.classList.remove("hidden");
+
+            const provider = new firebase.auth.GoogleAuthProvider();
+            try {
+                const result = await auth.signInWithPopup(provider);
+                const user = result.user;
+
+                if (role === "admin" && user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+                    await auth.signOut();
+                    loadingBox.classList.add("hidden");
+                    errorBox.textContent = `Access Denied: ${user.email} is not authorized as Admin. Please use User Login.`;
+                    errorBox.classList.remove("hidden");
+                    return;
+                }
+            } catch (error) {
+                if (error.code === "auth/popup-blocked" || error.code === "auth/operation-not-supported-in-this-environment") {
+                    try {
+                        await auth.signInWithRedirect(provider);
+                        return;
+                    } catch (redirectError) {
+                        loadingBox.classList.add("hidden");
+                        errorBox.textContent = `Login Failed: ${redirectError.message}`;
+                        errorBox.classList.remove("hidden");
+                    }
+                } else {
+                    loadingBox.classList.add("hidden");
+                    errorBox.textContent = `Login Failed: ${error.message}`;
+                    errorBox.classList.remove("hidden");
+                }
+            }
+        }
+
+        async function logout() {
+            if (unsubscribeProducts) unsubscribeProducts();
+            sessionStorage.removeItem("intendedRole");
+            await auth.signOut();
+        }
+
+        auth.onAuthStateChanged(async (user) => {
+            const landingView = document.getElementById("landingView");
+            const userView = document.getElementById("userView");
+            const adminView = document.getElementById("adminView");
+            const navbar = document.getElementById("navbar");
+            const loadingBox = document.getElementById("authLoading");
+            const errorBox = document.getElementById("authError");
+
+            loadingBox.classList.add("hidden");
+
+            if (user) {
+                const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+                
+                if (intendedRole === "admin" && !isAdmin) {
+                    await auth.signOut();
+                    landingView.classList.remove("hidden");
+                    navbar.classList.add("hidden");
+                    adminView.classList.add("hidden");
+                    userView.classList.add("hidden");
+                    errorBox.textContent = `Access Denied: ${user.email} is not authorized as Admin.`;
+                    errorBox.classList.remove("hidden");
+                    return;
+                }
+
+                landingView.classList.add("hidden");
+                navbar.classList.remove("hidden");
+                document.getElementById("userEmailDisplay").textContent = user.email;
+
+                await seedDefaultProducts(false);
+                startProductListener();
+
+                if (intendedRole === "admin" && isAdmin) {
+                    adminView.classList.remove("hidden");
+                    userView.classList.add("hidden");
+                    document.getElementById("roleBadge").textContent = "Admin Panel";
+                } else {
+                    userView.classList.remove("hidden");
+                    adminView.classList.add("hidden");
+                    document.getElementById("roleBadge").textContent = "Customer Store";
+                }
+            } else {
+                landingView.classList.remove("hidden");
+                userView.classList.add("hidden");
+                adminView.classList.add("hidden");
+                navbar.classList.add("hidden");
+            }
+        });
+
+        function startProductListener() {
+            if (unsubscribeProducts) unsubscribeProducts();
+            unsubscribeProducts = db.collection("products").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+                allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderUserProducts();
+                renderAdminProducts();
+            }, (error) => {
+                console.error("Firestore read error:", error);
+            });
+        }
+
+        fun
