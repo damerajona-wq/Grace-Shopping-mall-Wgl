@@ -1,304 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grace Shopping Mall - Warangal</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<!-- Firebase Compat SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grace Shopping Mall - Warangal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .modal-backdrop { background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
-<!-- Navbar -->
-<nav class="bg-indigo-900 text-white shadow-lg sticky top-0 z-50">
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex justify-between items-center h-16">
-<div class="flex items-center space-x-2">
-<span class="text-2xl font-extrabold tracking-tight text-amber-400">GRACE</span>
-<span class="text-lg font-medium">Shopping Mall WGL</span>
-</div>
-<div class="flex items-center space-x-4">
-<span id="userEmailDisplay" class="text-sm text-indigo-200 hidden sm:inline"></span>
-<button id="authModalBtn" onclick="toggleModal('authModal')" class="bg-amber-500 hover:bg-amber-600 text-indigo-950 font-semibold px-4 py-2 rounded-lg text-sm transition">
-Login / Sign Up
-</button>
-<button id="adminToggleBtn" onclick="toggleAdminPanel()" class="hidden bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-4 py-2 rounded-lg text-sm transition">
-Admin Panel
-</button>
-<button id="logoutBtn" onclick="logoutUser()" class="hidden bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-2 rounded-lg text-sm transition">
-Logout
-</button>
-</div>
-</div>
-</div>
-</nav>
-<!-- Hero Banner -->
-<header class="bg-gradient-to-r from-indigo-800 via-indigo-700 to-purple-800 text-white py-12 px-4 text-center">
-<h1 class="text-3xl sm:text-5xl font-bold mb-3">Welcome to Grace Shopping Mall</h1>
-<p class="text-indigo-200 max-w-2xl mx-auto text-base sm:text-lg">
-Premium Ethnic & Casual Wear in Warangal. Browse our latest collection and order directly via WhatsApp.
-</p>
-</header>
-<!-- Main Container -->
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-<!-- Admin Panel (Hidden by default) -->
-<section id="adminSection" class="hidden bg-white p-6 rounded-xl shadow-md border border-gray-200 mb-10">
-<div class="flex justify-between items-center border-b pb-4 mb-6">
-<h2 class="text-2xl font-bold text-indigo-900">Admin Dashboard - Add New Product</h2>
-<button onclick="toggleAdminPanel()" class="text-gray-500 hover:text-gray-800 font-bold text-xl">×</button>
-</div>
-<form id="addProductForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-<input type="text" id="prodName" required placeholder="e.g., Silk Kanchipuram Saree" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-<select id="prodCategory" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-<option value="Ethnic Wear">Ethnic Wear</option>
-<option value="Men's Fashion">Men's Fashion</option>
-<option value="Women's Fashion">Women's Fashion</option>
-<option value="Kids Wear">Kids Wear</option>
-</select>
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Price (INR ₹)</label>
-<input type="number" id="prodPrice" required placeholder="e.g., 1499" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-<input type="url" id="prodImage" required placeholder="https://example.com/image.jpg" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<div class="md:col-span-2">
-<label class="block text-sm font-medium text-gray-700 mb-1">Available Sizes (comma separated)</label>
-<input type="text" id="prodSizes" value="S, M, L, XL" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<div class="md:col-span-2">
-<button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition">
-+ Add Product to Store
-</button>
-</div>
-</form>
-</section>
-<!-- Category Filters -->
-<div class="flex flex-wrap items-center justify-between gap-4 mb-8">
-<h2 class="text-2xl font-bold text-gray-900">Latest Collection</h2>
-<div class="flex flex-wrap gap-2" id="categoryFilters">
-<button onclick="filterProducts('All')" class="filter-btn bg-indigo-900 text-white px-4 py-1.5 rounded-full text-sm font-medium">All</button>
-<button onclick="filterProducts('Ethnic Wear')" class="filter-btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-1.5 rounded-full text-sm font-medium">Ethnic Wear</button>
-<button onclick="filterProducts('Men\'s Fashion')" class="filter-btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-1.5 rounded-full text-sm font-medium">Men's Fashion</button>
-<button onclick="filterProducts('Women\'s Fashion')" class="filter-btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-1.5 rounded-full text-sm font-medium">Women's Fashion</button>
-<button onclick="filterProducts('Kids Wear')" class="filter-btn bg-gray-200 text-gray-700 hover:bg-gray-300 px-4 py-1.5 rounded-full text-sm font-medium">Kids Wear</button>
-</div>
-</div>
-<!-- Product Grid -->
-<div id="loadingIndicator" class="text-center py-12 text-gray-500 font-medium">
-Loading catalog...
-</div>
-<div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-<!-- Products injected dynamically via JS -->
-</div>
-</main>
-<!-- Auth Modal -->
-<div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-<div class="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl">
-<div class="flex justify-between items-center border-b pb-3 mb-4">
-<h3 id="authTitle" class="text-xl font-bold text-gray-900">Sign In</h3>
-<button onclick="toggleModal('authModal')" class="text-gray-500 hover:text-gray-800 text-2xl leading-none">×</button>
-</div>
-<form id="authForm" class="space-y-4">
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-<input type="email" id="authEmail" required placeholder="you@example.com" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<div>
-<label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-<input type="password" id="authPassword" required placeholder="••••••••" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-</div>
-<p id="authError" class="text-red-600 text-sm hidden"></p>
-<button type="submit" id="authSubmitBtn" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition">
-Login
-</button>
-</form>
-<div class="mt-4 pt-4 border-t text-center space-y-3">
-<button onclick="loginWithGoogle()" class="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium py-2 rounded-lg transition">
-<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" class="w-5 h-5">
-Continue with Google
-</button>
-<p class="text-sm text-gray-600">
-<span id="authSwitchText">Don't have an account?</span>
-<button type="button" onclick="switchAuthMode()" id="authSwitchBtn" class="text-indigo-700 font-semibold hover:underline ml-1">Sign Up</button>
-</p>
-</div>
-</div>
-</div>
-<!-- Footer -->
-<footer class="bg-gray-900 text-gray-400 py-8 mt-16 text-center text-sm">
-<p>© 2026 Grace Shopping Mall, Warangal. All rights reserved.</p>
-</footer>
-<script>
-// Exact Firebase Configuration from Console
-const firebaseConfig = {
-  apiKey: "AIzaSyAScm8g7PzcfL_YpEQ40sUK8V8bYu7i_DI",
-  authDomain: "grace-shopping-mall-wgl.firebaseapp.com",
-  projectId: "grace-shopping-mall-wgl",
-  storageBucket: "grace-shopping-mall-wgl.firebasestorage.app",
-  messagingSenderId: "873828074356",
-  appId: "1:873828074356:web:e7ae50e7117b7cb90d2221",
-  measurementId: "G-X3EVQ7RPB2"
-};
+<body class="bg-gray-50 text-gray-800">
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl font-extrabold text-amber-500">GRACE</span>
+                    <span class="text-lg font-bold text-blue-900">Shopping Mall WGL</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="userDisplay" class="hidden text-sm font-medium text-gray-700"></span>
+                    <button id="openAuthBtn" onclick="toggleAuthModal(true)" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition">
+                        Login / Sign Up
+                    </button>
+                    <button id="logoutBtn" onclick="logoutUser()" class="hidden bg-red-500 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg shadow transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-// Configuration Constants
-const WHATSAPP_NUMBER = "919492631963";
-const ADMIN_EMAILS = ["admin@graceshoppingmall.com", "damerajona@gmail.com"];
-let isSignUpMode = false;
-let isAdmin = false;
-let allProducts = [];
-let currentCategory = 'All';
+    <!-- Hero Banner -->
+    <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-14 px-4 text-center shadow-inner">
+        <h1 class="text-3xl sm:text-5xl font-bold mb-3">Welcome to Grace Shopping Mall</h1>
+        <p class="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto">
+            Premium Ethnic & Casual Wear in Warangal. Browse our latest collection and order directly via WhatsApp.
+        </p>
+    </header>
 
-// Auth State Listener
-auth.onAuthStateChanged((user) => {
-  const authModalBtn = document.getElementById('authModalBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const adminToggleBtn = document.getElementById('adminToggleBtn');
-  const userEmailDisplay = document.getElementById('userEmailDisplay');
+    <!-- Main Catalog Section -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+            <h2 class="text-2xl font-bold text-gray-800">Latest Collection</h2>
+            
+            <!-- Category Filters -->
+            <div class="flex flex-wrap gap-2 justify-center" id="categoryButtons">
+                <button onclick="filterProducts('All', this)" class="filter-btn bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-medium shadow">All</button>
+                <button onclick="filterProducts('Ethnic Wear', this)" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium">Ethnic Wear</button>
+                <button onclick="filterProducts('Men\'s Fashion', this)" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium">Men's Fashion</button>
+                <button onclick="filterProducts('Women\'s Fashion', this)" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium">Women's Fashion</button>
+                <button onclick="filterProducts('Kids Wear', this)" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium">Kids Wear</button>
+            </div>
+        </div>
 
-  if (user) {
-    authModalBtn.classList.add('hidden');
-    logoutBtn.classList.remove('hidden');
-    userEmailDisplay.textContent = user.email;
-    userEmailDisplay.classList.remove('hidden');
+        <!-- Product Grid -->
+        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Products will load here -->
+        </div>
+    </main>
 
-    // Check Admin privilege
-    if (ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-      isAdmin = true;
-      adminToggleBtn.classList.remove('hidden');
-    } else {
-      isAdmin = false;
-      adminToggleBtn.classList.add('hidden');
-      document.getElementById('adminSection').classList.add('hidden');
-    }
-  } else {
-    isAdmin = false;
-    authModalBtn.classList.remove('hidden');
-    logoutBtn.classList.add('hidden');
-    adminToggleBtn.classList.add('hidden');
-    userEmailDisplay.classList.add('hidden');
-    document.getElementById('adminSection').classList.add('hidden');
-  }
-  renderProducts();
-});
+    <!-- Auth Modal (Login / Sign Up Popup) -->
+    <div id="authModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fade-in">
+            <button onclick="toggleAuthModal(false)" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h3 id="modalTitle" class="text-2xl font-bold text-center text-blue-900 mb-2">Welcome Back</h3>
+            <p class="text-center text-gray-500 text-sm mb-6">Login or create an account to continue</p>
 
-// Toggle Auth Modal
-function toggleModal(modalId) {
-  const modal = document.getElementById(modalId);
-  if (modal.classList.contains('hidden')) {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-  } else {
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
-    document.getElementById('authError').classList.add('hidden');
-  }
-}
+            <div id="authError" class="hidden bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded text-sm mb-4"></div>
 
-// Switch Login / Sign Up
-function switchAuthMode() {
-  isSignUpMode = !isSignUpMode;
-  document.getElementById('authTitle').textContent = isSignUpMode ? 'Create Account' : 'Sign In';
-  document.getElementById('authSubmitBtn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
-  document.getElementById('authSwitchText').textContent = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
-  document.getElementById('authSwitchBtn').textContent = isSignUpMode ? 'Login' : 'Sign Up';
-  document.getElementById('authError').classList.add('hidden');
-}
-
-// Email/Password Auth Handler
-document.getElementById('authForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('authEmail').value.trim();
-  const password = document.getElementById('authPassword').value;
-  const errorEl = document.getElementById('authError');
-  errorEl.classList.add('hidden');
-
-  try {
-    if (isSignUpMode) {
-      await auth.createUserWithEmailAndPassword(email, password);
-    } else {
-      await auth.signInWithEmailAndPassword(email, password);
-    }
-    toggleModal('authModal');
-    e.target.reset();
-  } catch (error) {
-    errorEl.textContent = error.message;
-    errorEl.classList.remove('hidden');
-  }
-});
-
-// Google Auth Handler
-async function loginWithGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  const errorEl = document.getElementById('authError');
-  try {
-    await auth.signInWithPopup(provider);
-    toggleModal('authModal');
-  } catch (error) {
-    errorEl.textContent = error.message;
-    errorEl.classList.remove('hidden');
-  }
-}
-
-// Logout
-function logoutUser() {
-  auth.signOut();
-}
-
-// Toggle Admin Panel
-function toggleAdminPanel() {
-  const panel = document.getElementById('adminSection');
-  panel.classList.toggle('hidden');
-}
-
-// Add Product to Firestore
-document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!isAdmin) return alert("Unauthorized action.");
-
-  const productData = {
-    name: document.getElementById('prodName').value.trim(),
-    category: document.getElementById('prodCategory').value,
-    price: Number(document.getElementById('prodPrice').value),
-    image: document.getElementById('prodImage').value.trim(),
-    sizes: document.getElementById('prodSizes').value.split(',').map(s => s.trim()).filter(Boolean),
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  try {
-    await db.collection('products').add(productData);
-    e.target.reset();
-    alert("Product added successfully!");
-  } catch (error) {
-    alert("Error adding product: " + error.message);
-  }
-});
-
-// Delete Product (Admin Only)
-async function deleteProduct(id) {
-  if (!isAdmin) return;
-  if (confirm("Are you sure you want to delete this item?")) {
-    try {
-      await db.collection('products').doc(id).delete();
-    } catch (error) {
-      alert("Error deleting product: " + error.message);
-    }
-  }
-}
-
-// Real-time Firestore Listener for Products
-db.collection('products').orderBy('createdAt', '
+            <!-- Email / Password Form -->
+            <form id="authForm" onsubmit="handleEmailAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="emailInput" required placeholder="Enter your email" class="w-full px-3 py-2 border border-gray-3
