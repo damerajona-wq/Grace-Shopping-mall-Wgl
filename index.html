@@ -73,7 +73,7 @@ Premium Ethnic & Casual Wear in Warangal. Browse our latest collection and order
 </div>
 <div class="md:col-span-2">
 <label class="block text-sm font-medium text-gray-700 mb-1">Available Sizes (comma separated)</label>
-<input type="text" id="prodSizes" value="S, M, L, XL" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-5056">
+<input type="text" id="prodSizes" value="S, M, L, XL" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
 </div>
 <div class="md:col-span-2">
 <button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-semibold py-2.5 rounded-lg transition">
@@ -141,18 +141,20 @@ Continue with Google
 <script>
 // Exact Firebase Configuration from Console
 const firebaseConfig = {
-apiKey: "AIzaSyA8g7Pzctl_YpEQ04ukbvY7l_DI",
-authDomain: "grace-shopping-mall-wgl.firebaseapp.com",
-projectId: "grace-shopping-mall-wgl",
-storageBucket: "grace-shopping-mall-wgl.appspot.com",
-messagingSenderId: "873828074356",
-appId: "1:873828074356:web:a7e6be7117dc6b90d22221",
-measurementId: "G-X3EVQ7RPB2"
+  apiKey: "AIzaSyA8g7Pzctl_YpEQ04ukbvY7l_DI",
+  authDomain: "grace-shopping-mall-wgl.firebaseapp.com",
+  projectId: "grace-shopping-mall-wgl",
+  storageBucket: "grace-shopping-mall-wgl.appspot.com",
+  messagingSenderId: "873828074356",
+  appId: "1:873828074356:web:a7e6be7117dc6b90d22221",
+  measurementId: "G-X3EVQ7RPB2"
 };
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
+
 // Configuration Constants
 const WHATSAPP_NUMBER = "919492631963";
 const ADMIN_EMAILS = ["admin@graceshoppingmall.com", "damerajona@gmail.com"];
@@ -160,183 +162,226 @@ let isSignUpMode = false;
 let isAdmin = false;
 let allProducts = [];
 let currentCategory = 'All';
+
 // Auth State Listener
 auth.onAuthStateChanged((user) => {
-const authModalBtn = document.getElementById('authModalBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const adminToggleBtn = document.getElementById('adminToggleBtn');
-const userEmailDisplay = document.getElementById('userEmailDisplay');
-if (user) {
-authModalBtn.classList.add('hidden');
-logoutBtn.classList.remove('hidden');
-userEmailDisplay.textContent = user.email;
-userEmailDisplay.classList.remove('hidden');
-// Check Admin privilege
-if (ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-isAdmin = true;
-adminToggleBtn.classList.remove('hidden');
-} else {
-isAdmin = false;
-adminToggleBtn.classList.add('hidden');
-document.getElementById('adminSection').classList.add('hidden');
-}
-} else {
-isAdmin = false;
-authModalBtn.classList.remove('hidden');
-logoutBtn.classList.add('hidden');
-adminToggleBtn.classList.add('hidden');
-userEmailDisplay.classList.add('hidden');
-document.getElementById('adminSection').classList.add('hidden');
-}
-renderProducts();
+  const authModalBtn = document.getElementById('authModalBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const adminToggleBtn = document.getElementById('adminToggleBtn');
+  const userEmailDisplay = document.getElementById('userEmailDisplay');
+
+  if (user) {
+    authModalBtn.classList.add('hidden');
+    logoutBtn.classList.remove('hidden');
+    userEmailDisplay.textContent = user.email;
+    userEmailDisplay.classList.remove('hidden');
+
+    // Check Admin privilege
+    if (ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+      isAdmin = true;
+      adminToggleBtn.classList.remove('hidden');
+    } else {
+      isAdmin = false;
+      adminToggleBtn.classList.add('hidden');
+      document.getElementById('adminSection').classList.add('hidden');
+    }
+  } else {
+    isAdmin = false;
+    authModalBtn.classList.remove('hidden');
+    logoutBtn.classList.add('hidden');
+    adminToggleBtn.classList.add('hidden');
+    userEmailDisplay.classList.add('hidden');
+    document.getElementById('adminSection').classList.add('hidden');
+  }
+  renderProducts();
 });
+
 // Toggle Auth Modal
 function toggleModal(modalId) {
-const modal = document.getElementById(modalId);
-if (modal.classList.contains('hidden')) {
-modal.classList.remove('hidden');
-modal.classList.add('flex');
-} else {
-modal.classList.add('hidden');
-modal.classList.remove('flex');
-document.getElementById('authError').classList.add('hidden');
+  const modal = document.getElementById(modalId);
+  if (modal.classList.contains('hidden')) {
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  } else {
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.getElementById('authError').classList.add('hidden');
+  }
 }
-}
+
 // Switch Login / Sign Up
 function switchAuthMode() {
-isSignUpMode = !isSignUpMode;
-document.getElementById('authTitle').textContent = isSignUpMode ? 'Create Account' : 'Sign In';
-document.getElementById('authSubmitBtn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
-document.getElementById('authSwitchText').textContent = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
-document.getElementById('authSwitchBtn').textContent = isSignUpMode ? 'Login' : 'Sign Up';
-document.getElementById('authError').classList.add('hidden');
+  isSignUpMode = !isSignUpMode;
+  document.getElementById('authTitle').textContent = isSignUpMode ? 'Create Account' : 'Sign In';
+  document.getElementById('authSubmitBtn').textContent = isSignUpMode ? 'Sign Up' : 'Login';
+  document.getElementById('authSwitchText').textContent = isSignUpMode ? 'Already have an account?' : "Don't have an account?";
+  document.getElementById('authSwitchBtn').textContent = isSignUpMode ? 'Login' : 'Sign Up';
+  document.getElementById('authError').classList.add('hidden');
 }
+
 // Email/Password Auth Handler
 document.getElementById('authForm').addEventListener('submit', async (e) => {
-e.preventDefault();
-const email = document.getElementById('authEmail').value.trim();
-const password = document.getElementById('authPassword').value;
-const errorEl = document.getElementById('authError');
-errorEl.classList.add('hidden');
-try {
-if (isSignUpMode) {
-await auth.createUserWithEmailAndPassword(email, password);
-} else {
-await auth.signInWithEmailAndPassword(email, password);
-}
-toggleModal('authModal');
-e.target.reset();
-} catch (error) {
-errorEl.textContent = error.message;
-errorEl.classList.remove('hidden');
-}
+  e.preventDefault();
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const errorEl = document.getElementById('authError');
+  errorEl.classList.add('hidden');
+
+  try {
+    if (isSignUpMode) {
+      await auth.createUserWithEmailAndPassword(email, password);
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+    toggleModal('authModal');
+    e.target.reset();
+  } catch (error) {
+    errorEl.textContent = error.message;
+    errorEl.classList.remove('hidden');
+  }
 });
+
 // Google Auth Handler
 async function loginWithGoogle() {
-const provider = new firebase.auth.GoogleAuthProvider();
-const errorEl = document.getElementById('authError');
-try {
-await auth.signInWithPopup(provider);
-toggleModal('authModal');
-} catch (error) {
-errorEl.textContent = error.message;
-errorEl.classList.remove('hidden');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  const errorEl = document.getElementById('authError');
+  try {
+    await auth.signInWithPopup(provider);
+    toggleModal('authModal');
+  } catch (error) {
+    errorEl.textContent = error.message;
+    errorEl.classList.remove('hidden');
+  }
 }
-}
+
 // Logout
 function logoutUser() {
-auth.signOut();
+  auth.signOut();
 }
+
 // Toggle Admin Panel
 function toggleAdminPanel() {
-const panel = document.getElementById('adminSection');
-panel.classList.toggle('hidden');
+  const panel = document.getElementById('adminSection');
+  panel.classList.toggle('hidden');
 }
+
 // Add Product to Firestore
 document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-e.preventDefault();
-if (!isAdmin) return alert("Unauthorized action.");
-const productData = {
-name: document.getElementById('prodName').value.trim(),
-category: document.getElementById('prodCategory').value,
-price: Number(document.getElementById('prodPrice').value),
-image: document.getElementById('prodImage').value.trim(),
-sizes: document.getElementById('prodSizes').value.split(',').map(s => s.trim()).filter(Boolean),
-createdAt: firebase.firestore.FieldValue.serverTimestamp()
-};
-try {
-await db.collection('products').add(productData);
-e.target.reset();
-alert("Product added successfully!");
-} catch (error) {
-alert("Error adding product: " + error.message);
-}
+  e.preventDefault();
+  if (!isAdmin) return alert("Unauthorized action.");
+
+  const productData = {
+    name: document.getElementById('prodName').value.trim(),
+    category: document.getElementById('prodCategory').value,
+    price: Number(document.getElementById('prodPrice').value),
+    image: document.getElementById('prodImage').value.trim(),
+    sizes: document.getElementById('prodSizes').value.split(',').map(s => s.trim()).filter(Boolean),
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  try {
+    await db.collection('products').add(productData);
+    e.target.reset();
+    alert("Product added successfully!");
+  } catch (error) {
+    alert("Error adding product: " + error.message);
+  }
 });
+
 // Delete Product (Admin Only)
 async function deleteProduct(id) {
-if (!isAdmin) return;
-if (confirm("Are you sure you want to delete this item?")) {
-try {
-await db.collection('products').doc(id).delete();
-} catch (error) {
-alert("Error deleting product: " + error.message);
+  if (!isAdmin) return;
+  if (confirm("Are you sure you want to delete this item?")) {
+    try {
+      await db.collection('products').doc(id).delete();
+    } catch (error) {
+      alert("Error deleting product: " + error.message);
+    }
+  }
 }
-}
-}
+
 // Real-time Firestore Listener for Products
 db.collection('products').orderBy('createdAt', 'desc').onSnapshot((snapshot) => {
-document.getElementById('loadingIndicator').classList.add('hidden');
-allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-renderProducts();
+  document.getElementById('loadingIndicator').classList.add('hidden');
+  allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  renderProducts();
 }, (error) => {
-console.error("Firestore Error:", error);
-document.getElementById('loadingIndicator').textContent = "Failed to load products. Check Firestore rules.";
+  console.error("Firestore Error:", error);
+  document.getElementById('loadingIndicator').textContent = "Failed to load products. Check Firestore rules.";
 });
+
 // Filter Products by Category
 function filterProducts(category) {
-currentCategory = category;
-document.querySelectorAll('.filter-btn').forEach(btn => {
-if (btn.textContent === category) {
-btn.classList.remove('bg-gray-200', 'text-gray-700');
-btn.classList.add('bg-indigo-900', 'text-white');
-} else {
-btn.classList.add('bg-gray-200', 'text-gray-700');
-btn.classList.remove('bg-indigo-900', 'text-white');
+  currentCategory = category;
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    if (btn.textContent === category) {
+      btn.classList.remove('bg-gray-200', 'text-gray-700');
+      btn.classList.add('bg-indigo-900', 'text-white');
+    } else {
+      btn.classList.add('bg-gray-200', 'text-gray-700');
+      btn.classList.remove('bg-indigo-900', 'text-white');
+    }
+  });
+  renderProducts();
 }
-});
-renderProducts();
-}
+
 // Render Product Cards
 function renderProducts() {
-const grid = document.getElementById('productGrid');
-const filtered = currentCategory === 'All'
-? allProducts
-: allProducts.filter(p => p.category === currentCategory);
-if (filtered.length === 0) {
-grid.innerHTML = <div class="col-span-full text-center py-10 text-gray-500">No products found in this category.</div>;
-return;
+  const grid = document.getElementById('productGrid');
+  const filtered = currentCategory === 'All'
+    ? allProducts
+    : allProducts.filter(p => p.category === currentCategory);
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500">No products found in this category.</div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(prod => {
+    const sizesOptions = (prod.sizes || ['Standard']).map(sz => `<option value="${sz}">${sz}</option>`).join('');
+    return `
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+        <div>
+          <div class="relative h-64 bg-gray-100">
+            <img src="${prod.image}" alt="${prod.name}" onerror="this.src='https://via.placeholder.com/400x500?text=Grace+Mall'" class="w-full h-full object-cover">
+            <span class="absolute top-2 left-2 bg-indigo-900 text-white text-xs font-semibold px-2.5 py-1 rounded">${prod.category}</span>
+            ${isAdmin ? `<button onclick="deleteProduct('${prod.id}')" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1 rounded shadow">Delete</button>` : ''}
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-lg text-gray-900 line-clamp-1">${prod.name}</h3>
+            <p class="text-indigo-900 font-extrabold text-xl mt-1">₹${prod.price}</p>
+            <div class="mt-3">
+              <label class="text-xs text-gray-500 block mb-1">Select Size:</label>
+              <select id="size-${prod.id}" class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm bg-gray-50">
+                ${sizesOptions}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 pt-0">
+          <button onclick="orderViaWhatsApp('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${prod.price}, '${prod.image}')" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition">
+            <span>Order on WhatsApp</span>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
 }
-grid.innerHTML = filtered.map(prod => {
-const sizesOptions = (prod.sizes || ['Standard']).map(sz => <option value="${sz}">${sz}</option>).join('');
-return <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col justify-between hover:shadow-md transition"> <div> <div class="relative h-64 bg-gray-100"> <img src="${prod.image}" alt="${prod.name}" onerror="this.src='https://via.placeholder.com/400x500?text=Grace+Mall'" class="w-full h-full object-cover"> <span class="absolute top-2 left-2 bg-indigo-900 text-white text-xs font-semibold px-2.5 py-1 rounded">${prod.category}</span> ${isAdmin ?<button onclick="deleteProduct('${prod.id}')" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 py-1 rounded shadow">Delete</button>: ''} </div> <div class="p-4"> <h3 class="font-bold text-lg text-gray-900 line-clamp-1">${prod.name}</h3> <p class="text-indigo-900 font-extrabold text-xl mt-1">₹${prod.price}</p> <div class="mt-3"> <label class="text-xs text-gray-500 block mb-1">Select Size:</label> <select id="size-${prod.id}" class="w-full border border-gray-300 rounded-md px-2 py-1 text-sm bg-gray-50"> ${sizesOptions} </select> </div> </div> </div> <div class="p-4 pt-0"> <button onclick="orderViaWhatsApp('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${prod.price}, '${prod.image}')"  class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition"> <span>Order on WhatsApp</span> </button> </div> </div>;
-}).join('');
-}
+
 // WhatsApp Order Redirect
 function orderViaWhatsApp(id, name, price, imageUrl) {
-const sizeSelect = document.getElementById(size-${id});
-const selectedSize = sizeSelect ? sizeSelect.value : 'Standard';
-const orderRef = 'GSM-' + Math.floor(1000 + Math.random() * 9000);
-const message = Hi Grace Shopping Mall! I'd like to order:\n\n +
-🔹 *Order Ref:* ${orderRef}\n +
-🔹 *Item:* ${name}\n +
-🔹 *Size:* ${selectedSize}\n +
-🔹 *Price:* ₹${price}\n +
-🔹 *Photo:* ${imageUrl}\n\n +
-Please confirm availability.;
-const encodedMessage = encodeURIComponent(message);
-window.open(https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}, '_blank');
+  const sizeSelect = document.getElementById(`size-${id}`);
+  const selectedSize = sizeSelect ? sizeSelect.value : 'Standard';
+  const orderRef = 'GSM-' + Math.floor(1000 + Math.random() * 9000);
+  const message = `Hi Grace Shopping Mall! I'd like to order:\n\n` +
+    `🔹 *Order Ref:* ${orderRef}\n` +
+    `🔹 *Item:* ${name}\n` +
+    `🔹 *Size:* ${selectedSize}\n` +
+    `🔹 *Price:* ₹${price}\n` +
+    `🔹 *Photo:* ${imageUrl}\n\n` +
+    `Please confirm availability.`;
+  const encodedMessage = encodeURIComponent(message);
+  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`, '_blank');
 }
 </script>
 </body>
 </html>
-
