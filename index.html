@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storefront & Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-white p-4 shadow flex justify-between items-center">
+        <h1 class="text-xl font-bold">Grace Shopping Mall</h1>
+        <div>
+            <button id="loginBtn" onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded">Login</button>
+            <button id="logoutBtn" onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded hidden">Logout</button>
+        </div>
+    </nav>
+
+    <div id="adminPanel" class="max-w-6xl mx-auto mt-6 bg-white p-6 rounded shadow hidden">
+        <h2 class="text-2xl font-bold text-red-600 mb-4">Admin Dashboard</h2>
+        <p>Welcome, Admin. You have full access to manage items.</p>
+    </div>
+
+    <div class="max-w-6xl mx-auto mt-6">
+        <h2 class="text-2xl font-bold mb-4">Product Catalog</h2>
+        <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <!-- Products will appear here -->
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const ADMIN_EMAIL = "your-admin@email.com";
+
+        function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider);
+        }
+
+        function logout() {
+            auth.signOut();
+        }
+
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const adminPanel = document.getElementById('adminPanel');
+
+            if (user) {
+                loginBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+
+                if (user.email === ADMIN_EMAIL) {
+                    adminPanel.classList.remove('hidden');
+                } else {
+                    adminPanel.classList.add('hidden');
+                }
+            } else {
+                loginBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                adminPanel.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>
