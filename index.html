@@ -113,7 +113,7 @@
         <p>Quality Fashion for the Whole Family</p>
     </footer>
 
-    <!-- Core UI & Catalog Script (Runs independently so buttons ALWAYS open/work) -->
+    <!-- Core UI & Catalog Script -->
     <script>
         const WHATSAPP_NUMBER = "919492631963";
         const products = [
@@ -144,7 +144,6 @@
             }
         }
 
-        // Attach Modal & UI Event Listeners Immediately
         document.getElementById('openAuthBtn').addEventListener('click', () => toggleAuthModal(true));
         document.getElementById('closeAuthBtn').addEventListener('click', () => toggleAuthModal(false));
         document.getElementById('authModal').addEventListener('click', (e) => {
@@ -214,62 +213,46 @@
             signOut
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-        // ========================================================
-        // PASTE YOUR FIREBASE CONFIG HERE (Send it to me anytime!)
-        // ========================================================
         const firebaseConfig = {
-            apiKey: "PASTE_API_KEY_HERE",
+            apiKey: "AIzaSyAScm8g7PzcfL_YpEQ40sUK8V8bYu7i_DI",
             authDomain: "grace-shopping-mall-wgl.firebaseapp.com",
             projectId: "grace-shopping-mall-wgl",
             storageBucket: "grace-shopping-mall-wgl.firebasestorage.app",
-            messagingSenderId: "PASTE_SENDER_ID_HERE",
-            appId: "PASTE_APP_ID_HERE"
+            messagingSenderId: "873828074356",
+            appId: "1:873828074356:web:e7ae50e7117b7cb90d2221",
+            measurementId: "G-X3EVQ7RPB2"
         };
 
-        let auth = null;
-        const isConfigured = !firebaseConfig.apiKey.includes("PASTE_");
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-        if (isConfigured) {
-            try {
-                const app = initializeApp(firebaseConfig);
-                auth = getAuth(app);
+        // Handle mobile redirect result if popup fell back to redirect
+        getRedirectResult(auth).then((result) => {
+            if (result && result.user) toggleAuthModal(false);
+        }).catch((err) => {
+            showAlert(err.message.replace("Firebase: ", ""));
+        });
 
-                // Handle mobile redirect result if popup fell back to redirect
-                getRedirectResult(auth).then((result) => {
-                    if (result && result.user) toggleAuthModal(false);
-                }).catch((err) => {
-                    showAlert(err.message.replace("Firebase: ", ""));
-                });
+        onAuthStateChanged(auth, (user) => {
+            const openBtn = document.getElementById('openAuthBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userDisplay = document.getElementById('userDisplay');
 
-                onAuthStateChanged(auth, (user) => {
-                    const openBtn = document.getElementById('openAuthBtn');
-                    const logoutBtn = document.getElementById('logoutBtn');
-                    const userDisplay = document.getElementById('userDisplay');
-
-                    if (user) {
-                        openBtn.classList.add('hidden');
-                        logoutBtn.classList.remove('hidden');
-                        userDisplay.classList.remove('hidden');
-                        userDisplay.textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
-                    } else {
-                        openBtn.classList.remove('hidden');
-                        logoutBtn.classList.add('hidden');
-                        userDisplay.classList.add('hidden');
-                    }
-                });
-            } catch (err) {
-                console.error("Firebase init failed:", err);
+            if (user) {
+                openBtn.classList.add('hidden');
+                logoutBtn.classList.remove('hidden');
+                userDisplay.classList.remove('hidden');
+                userDisplay.textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
+            } else {
+                openBtn.classList.remove('hidden');
+                logoutBtn.classList.add('hidden');
+                userDisplay.classList.add('hidden');
             }
-        }
+        });
 
         // Email / Password Submit
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if (!auth) {
-                showAlert("Firebase keys are missing! Send your firebaseConfig to update this file.");
-                return;
-            }
-
             const email = document.getElementById('emailInput').value.trim();
             const password = document.getElementById('passwordInput').value;
             const submitBtn = document.getElementById('submitAuthBtn');
@@ -293,11 +276,6 @@
 
         // Google Sign-In (With automatic mobile redirect fallback)
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
-            if (!auth) {
-                showAlert("Firebase keys are missing! Send your firebaseConfig to update this file.");
-                return;
-            }
-
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
@@ -313,7 +291,7 @@
 
         // Logout
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            if (auth) await signOut(auth);
+            await signOut(auth);
         });
     </script>
 </body>
