@@ -8,68 +8,21 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .modal-backdrop { background-color: rgba(0, 0, 0, 0.65); backdrop-filter: blur(4px); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Navbar -->
-    <nav class="bg-white shadow-md sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center space-x-2">
-                    <span class="text-2xl font-extrabold text-amber-500">GRACE</span>
-                    <span class="text-lg font-bold text-blue-900">Shopping Mall WGL</span>
+    <!-- FULL-SCREEN MANDATORY LOGIN GATE (Visible until user logs in) -->
+    <div id="loginGate" class="fixed inset-0 z-50 bg-gradient-to-br from-blue-900 via-blue-800 to-gray-900 flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-7 relative">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center space-x-2 mb-2">
+                    <span class="text-3xl font-extrabold text-amber-500">GRACE</span>
+                    <span class="text-xl font-bold text-blue-900">Shopping Mall WGL</span>
                 </div>
-                <div class="flex items-center space-x-3">
-                    <span id="userDisplay" class="hidden text-sm font-semibold text-blue-900 bg-blue-50 px-3 py-1 rounded-full"></span>
-                    <button type="button" id="openAuthBtn" class="bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-semibold px-4 py-2 rounded-lg shadow transition cursor-pointer">
-                        Login / Sign Up
-                    </button>
-                    <button type="button" id="logoutBtn" class="hidden bg-red-500 hover:bg-red-600 active:scale-95 text-white font-semibold px-4 py-2 rounded-lg shadow transition cursor-pointer">
-                        Logout
-                    </button>
-                </div>
+                <h2 id="modalTitle" class="text-2xl font-bold text-gray-800 mt-2">Welcome Back</h2>
+                <p class="text-gray-500 text-sm mt-1">Please login or create an account to access the store</p>
             </div>
-        </div>
-    </nav>
-
-    <!-- Hero Banner -->
-    <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-14 px-4 text-center shadow-inner">
-        <h1 class="text-3xl sm:text-5xl font-bold mb-3">Welcome to Grace Shopping Mall</h1>
-        <p class="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto">
-            Premium Ethnic & Casual Wear in Warangal. Browse our latest collection and order directly via WhatsApp.
-        </p>
-    </header>
-
-    <!-- Main Catalog Section -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-            <h2 class="text-2xl font-bold text-gray-800">Latest Collection</h2>
-            
-            <!-- Category Filters -->
-            <div class="flex flex-wrap gap-2 justify-center" id="categoryButtons">
-                <button type="button" data-cat="All" class="filter-btn bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-medium shadow cursor-pointer">All</button>
-                <button type="button" data-cat="Ethnic Wear" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Ethnic Wear</button>
-                <button type="button" data-cat="Men's Fashion" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Men's Fashion</button>
-                <button type="button" data-cat="Women's Fashion" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Women's Fashion</button>
-                <button type="button" data-cat="Kids Wear" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Kids Wear</button>
-            </div>
-        </div>
-
-        <!-- Product Grid -->
-        <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-    </main>
-
-    <!-- Auth Modal (Login / Sign Up Popup) -->
-    <div id="authModal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-            <button type="button" id="closeAuthBtn" class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-xl p-1 cursor-pointer">
-                <i class="fas fa-times"></i>
-            </button>
-            
-            <h3 id="modalTitle" class="text-2xl font-bold text-center text-blue-900 mb-1">Welcome Back</h3>
-            <p class="text-center text-gray-500 text-sm mb-5">Login or create an account to continue</p>
 
             <div id="authAlert" class="hidden px-3 py-2 rounded-lg text-sm mb-4 font-medium"></div>
 
@@ -77,14 +30,14 @@
             <form id="authForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" id="emailInput" required placeholder="you@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <input type="email" id="emailInput" required placeholder="you@example.com" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="passwordInput" required minlength="6" placeholder="Minimum 6 characters" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
+                    <input type="password" id="passwordInput" required minlength="6" placeholder="Minimum 6 characters" class="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600">
                 </div>
                 <button type="submit" id="submitAuthBtn" class="w-full bg-blue-700 hover:bg-blue-800 active:scale-95 text-white font-semibold py-2.5 rounded-lg shadow transition cursor-pointer">
-                    Login
+                    Login to Enter Store
                 </button>
             </form>
 
@@ -107,11 +60,59 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-8 mt-16 text-center text-sm">
-        <p class="font-semibold text-white text-base mb-1">Grace Shopping Mall - Warangal</p>
-        <p>Quality Fashion for the Whole Family</p>
-    </footer>
+    <!-- MAIN WEBSITE CONTENT (Hidden until authenticated) -->
+    <div id="mainSite" class="hidden">
+        <!-- Navbar -->
+        <nav class="bg-white shadow-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 items-center">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-2xl font-extrabold text-amber-500">GRACE</span>
+                        <span class="text-lg font-bold text-blue-900">Shopping Mall WGL</span>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <span id="userDisplay" class="text-sm font-semibold text-blue-900 bg-blue-50 px-3 py-1 rounded-full"></span>
+                        <button type="button" id="logoutBtn" class="bg-red-500 hover:bg-red-600 active:scale-95 text-white font-semibold px-4 py-2 rounded-lg shadow transition cursor-pointer">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Hero Banner -->
+        <header class="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-14 px-4 text-center shadow-inner">
+            <h1 class="text-3xl sm:text-5xl font-bold mb-3">Welcome to Grace Shopping Mall</h1>
+            <p class="text-blue-100 text-base sm:text-lg max-w-2xl mx-auto">
+                Premium Ethnic & Casual Wear in Warangal. Browse our latest collection and order directly via WhatsApp.
+            </p>
+        </header>
+
+        <!-- Main Catalog Section -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
+                <h2 class="text-2xl font-bold text-gray-800">Latest Collection</h2>
+                
+                <!-- Category Filters -->
+                <div class="flex flex-wrap gap-2 justify-center" id="categoryButtons">
+                    <button type="button" data-cat="All" class="filter-btn bg-blue-700 text-white px-4 py-1.5 rounded-full text-sm font-medium shadow cursor-pointer">All</button>
+                    <button type="button" data-cat="Ethnic Wear" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Ethnic Wear</button>
+                    <button type="button" data-cat="Men's Fashion" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Men's Fashion</button>
+                    <button type="button" data-cat="Women's Fashion" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Women's Fashion</button>
+                    <button type="button" data-cat="Kids Wear" class="filter-btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-100 px-4 py-1.5 rounded-full text-sm font-medium cursor-pointer">Kids Wear</button>
+                </div>
+            </div>
+
+            <!-- Product Grid -->
+            <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-900 text-gray-300 py-8 mt-16 text-center text-sm">
+            <p class="font-semibold text-white text-base mb-1">Grace Shopping Mall - Warangal</p>
+            <p>Quality Fashion for the Whole Family</p>
+        </footer>
+    </div>
 
     <!-- Core UI & Catalog Script -->
     <script>
@@ -134,26 +135,10 @@
             box.classList.remove('hidden');
         }
 
-        function toggleAuthModal(show) {
-            const modal = document.getElementById('authModal');
-            document.getElementById('authAlert').classList.add('hidden');
-            if (show) {
-                modal.classList.remove('hidden');
-            } else {
-                modal.classList.add('hidden');
-            }
-        }
-
-        document.getElementById('openAuthBtn').addEventListener('click', () => toggleAuthModal(true));
-        document.getElementById('closeAuthBtn').addEventListener('click', () => toggleAuthModal(false));
-        document.getElementById('authModal').addEventListener('click', (e) => {
-            if (e.target.id === 'authModal') toggleAuthModal(false);
-        });
-
         document.getElementById('toggleModeBtn').addEventListener('click', () => {
             isSignUpMode = !isSignUpMode;
             document.getElementById('modalTitle').textContent = isSignUpMode ? "Create Account" : "Welcome Back";
-            document.getElementById('submitAuthBtn').textContent = isSignUpMode ? "Sign Up" : "Login";
+            document.getElementById('submitAuthBtn').textContent = isSignUpMode ? "Sign Up & Enter Store" : "Login to Enter Store";
             document.getElementById('toggleModeBtn').textContent = isSignUpMode
                 ? "Already have an account? Login"
                 : "Don't have an account? Sign Up";
@@ -226,27 +211,24 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Handle mobile redirect result if popup fell back to redirect
-        getRedirectResult(auth).then((result) => {
-            if (result && result.user) toggleAuthModal(false);
-        }).catch((err) => {
+        // Handle mobile redirect result
+        getRedirectResult(auth).catch((err) => {
             showAlert(err.message.replace("Firebase: ", ""));
         });
 
+        // Gatekeeper: Unlock mainSite ONLY when logged in
         onAuthStateChanged(auth, (user) => {
-            const openBtn = document.getElementById('openAuthBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
+            const loginGate = document.getElementById('loginGate');
+            const mainSite = document.getElementById('mainSite');
             const userDisplay = document.getElementById('userDisplay');
 
             if (user) {
-                openBtn.classList.add('hidden');
-                logoutBtn.classList.remove('hidden');
-                userDisplay.classList.remove('hidden');
+                loginGate.classList.add('hidden');
+                mainSite.classList.remove('hidden');
                 userDisplay.textContent = `Hi, ${user.displayName || user.email.split('@')[0]}`;
             } else {
-                openBtn.classList.remove('hidden');
-                logoutBtn.classList.add('hidden');
-                userDisplay.classList.add('hidden');
+                mainSite.classList.add('hidden');
+                loginGate.classList.remove('hidden');
             }
         });
 
@@ -265,21 +247,19 @@
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
                 }
-                toggleAuthModal(false);
             } catch (error) {
                 showAlert(error.message.replace("Firebase: ", ""));
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = isSignUpMode ? "Sign Up" : "Login";
+                submitBtn.textContent = isSignUpMode ? "Sign Up & Enter Store" : "Login to Enter Store";
             }
         });
 
-        // Google Sign-In (With automatic mobile redirect fallback)
+        // Google Sign-In
         document.getElementById('googleLoginBtn').addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
-                toggleAuthModal(false);
             } catch (error) {
                 if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
                     await signInWithRedirect(auth, provider);
@@ -289,7 +269,7 @@
             }
         });
 
-        // Logout
+        // Logout (Immediately locks website again)
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await signOut(auth);
         });
